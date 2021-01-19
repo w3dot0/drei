@@ -4,7 +4,7 @@ import { useFrame, useLoader } from 'react-three-fiber'
 
 import { Setup } from '../Setup'
 
-import { CurveModifier, CurveModifierRef } from '../../src'
+import { CurveModifier, CurveModifierRef, EditableCurveModifier } from '../../src'
 
 export default {
   title: 'Modifiers/CurveModifier',
@@ -78,3 +78,60 @@ export const CurveModifierSt = () => (
   </React.Suspense>
 )
 CurveModifierSt.storyName = 'Default'
+
+function EditableCurveModifierScene() {
+  const curveRef = React.useRef<CurveModifierRef>()
+  const geomRef = React.useRef<THREE.TextGeometry>(null!)
+  const font = useLoader(THREE.FontLoader, '/fonts/helvetiker_regular.typeface.json')
+
+  const handlePos = React.useMemo(
+    () =>
+      [
+        { x: 10, y: 0, z: -10 },
+        { x: 10, y: 0, z: 10 },
+        { x: -10, y: 0, z: 10 },
+        { x: -10, y: 0, z: -10 },
+      ].map((hand) => new THREE.Vector3(...Object.values(hand))),
+    []
+  )
+
+  const curve = React.useMemo(() => new THREE.CatmullRomCurve3(handlePos, true, 'centripetal'), [handlePos])
+
+  useFrame(() => {
+    if (curveRef.current) {
+      curveRef.current?.moveAlongCurve(0.001)
+    }
+  })
+
+  React.useEffect(() => {
+    geomRef.current.rotateX(Math.PI)
+  }, [])
+
+  return (
+    <>
+      <EditableCurveModifier ref={curveRef} curve={curve}>
+        <mesh>
+          <textGeometry
+            args={[
+              'hello @react-three/drei',
+              {
+                font,
+                size: 1,
+                height: 1,
+              },
+            ]}
+            ref={geomRef}
+          />
+          <meshNormalMaterial attach="material" />
+        </mesh>
+      </EditableCurveModifier>
+    </>
+  )
+}
+
+export const EditableCurveModifierSt = () => (
+  <React.Suspense fallback={null}>
+    <EditableCurveModifierScene />
+  </React.Suspense>
+)
+EditableCurveModifierSt.storyName = 'Editable'
