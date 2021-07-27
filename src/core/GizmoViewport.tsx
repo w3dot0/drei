@@ -13,7 +13,7 @@ type AxisHeadProps = JSX.IntrinsicElements['sprite'] & {
   labelColor: string
   disabled?: boolean
   font: string
-  onClick?: (e: Event) => null
+  onClick?: (e: Event) => void
 }
 
 type GizmoViewportProps = JSX.IntrinsicElements['group'] & {
@@ -22,7 +22,7 @@ type GizmoViewportProps = JSX.IntrinsicElements['group'] & {
   hideNegativeAxes?: boolean
   disabled?: boolean
   font?: string
-  onClick?: (e: Event) => null
+  onClick?: (e: Event) => void
 }
 
 function Axis({ color, rotation }: AxisProps) {
@@ -36,7 +36,7 @@ function Axis({ color, rotation }: AxisProps) {
   )
 }
 
-function AxisHead({ onClick, font, disabled, arcStyle, label, labelColor, ...props }: AxisHeadProps) {
+function AxisHead({ font, disabled, arcStyle, label, labelColor, ...props }: AxisHeadProps) {
   const texture = React.useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 64
@@ -72,7 +72,7 @@ function AxisHead({ onClick, font, disabled, arcStyle, label, labelColor, ...pro
     <sprite
       scale={scale}
       onPointerOver={!disabled ? handlePointerOver : undefined}
-      onPointerOut={!disabled ? onClick || handlePointerOut : undefined}
+      onPointerOut={!disabled ? handlePointerOut : undefined}
       {...props}
     >
       <spriteMaterial map={texture} alphaTest={0.3} opacity={label ? 1 : 0.75} toneMapped={false} />
@@ -96,12 +96,12 @@ export const GizmoViewport = ({
     disabled,
     labelColor,
     raycast,
-    onClick,
-    onPointerDown: !disabled
-      ? (e: Event) => {
-          tweenCamera(e.object.position)
+    onClick: !disabled
+      ? onClick ||
+        ((e: Event) => {
           e.stopPropagation()
-        }
+          tweenCamera(e.object.position)
+        })
       : undefined,
   }
   return (
